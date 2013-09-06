@@ -8,7 +8,7 @@
 	</parent>
 	
 	<artifactId>lexml-diff</artifactId>
-	<version>1.1.1</version>
+	<version>1.1.1-SNAPSHOT</version>
 
 	<properties>
 		<scala.version>2.10</scala.version>
@@ -19,7 +19,7 @@
 		<url>https://github.com/lexml/${project.artifactId}</url>
 		<developerConnection>scm:git:https://github.com/lexml/${project.artifactId}.git</developerConnection>
 		<connection>scm:git:https://github.com/lexml/${project.artifactId}.git</connection>
-		<tag>lexml-diff-1.1.1</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<build>

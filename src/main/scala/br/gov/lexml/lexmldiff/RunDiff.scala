@@ -213,15 +213,17 @@ object LexmlDiff {
   
   def processa(minProp : Double, ignoreCase : Boolean, src: File, dst: File) {
     val srcXml = XML.loadFile(src)
-
+    
+    val x = (srcXml \\ "@minProp").toSeq.headOption.map(_.text.toDouble)
     val res = for {
       versao ← srcXml \ "versao"
       id ← versao \\ "@id"
+      specificMinProp = (versao \\ "@minProp").map(_.text.toDouble / 100.0).headOption
       ori ← versao \\ "ori"
       alt ← versao \\ "alt"
       role ← (versao \\ "@role").headOption
     } yield {      
-      val formated = diffAsXML(ori.text,alt.text,minProp,ignoreCase)
+      val formated = diffAsXML(ori.text,alt.text,specificMinProp.getOrElse(minProp),ignoreCase)
       
       <diff:versao id={ id }>
         <para role={ role }>

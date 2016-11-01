@@ -15,3 +15,5 @@ project/plugins/project/
 /.settings
 /.classpath
 /.cache
+/.cache-main
+/.cache-tests

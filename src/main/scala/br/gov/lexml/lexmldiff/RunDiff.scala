@@ -38,8 +38,8 @@ object DiffCase {
     case (Change(t1, t2) :: r) if t1.endsWith(" ") && t2.endsWith(" ") =>      
       collapseOnce(Change(t1.substring(0,t1.length-1), t2.substring(0,t2.length-1)) :: EqualSpace :: r)
     
-    case (Change(t1, t2) :: r) if t1.startsWith(" ") && t2.startsWith(" ") ⇒ 
-      collapseOnce(EqualSpace :: Change(t1.substring(1), t2.substring(2)) :: r)
+    case (Change(t1, t2) :: r) if t1.startsWith(" ") && t2.startsWith(" ") ⇒       
+      collapseOnce(EqualSpace :: Change(t1.substring(1), t2.substring(1)) :: r)
     
     case (n1 :: n2 :: r) if n1.merge2.isDefinedAt(n2) ⇒ collapseOnce(n1.merge2(n2) :: r)
     case (n1 :: n2 :: n3 :: r) if n1.merge3.isDefinedAt((n2, n3)) ⇒ collapseOnce(n1.merge3(n2, n3) :: r)

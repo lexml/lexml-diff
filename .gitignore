@@ -17,3 +17,5 @@ project/plugins/project/
 /.cache
 /.cache-main
 /.cache-tests
+/.mvn/
+/.DS_Store

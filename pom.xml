@@ -3,7 +3,7 @@
 	
 	<groupId>br.gov.lexml</groupId>
 	<artifactId>lexml-diff</artifactId>
-	<version>1.2.0</version>
+	<version>1.2.1-SNAPSHOT</version>
 	<name>LexML Brazil Document Diff Library and Tool</name>
 	<description>Library and tool for producing diffs of LexML Documents</description>
 	<url>https://github.com/lexml/lexml-diff</url>
@@ -19,7 +19,7 @@
 		<url>https://github.com/lexml/lexml-diff</url>
 		<developerConnection>scm:git:https://github.com/lexml/lexml-diff.git</developerConnection>
 		<connection>scm:git:https://github.com/lexml/lexml-diff.git</connection>
-		<tag>1.2.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<licenses>

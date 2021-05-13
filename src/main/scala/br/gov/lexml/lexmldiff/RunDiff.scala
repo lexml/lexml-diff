@@ -14,9 +14,9 @@ import scala.xml.NodeSeq
 import difflib.myers.Equalizer
 
 abstract sealed class DiffCase {
-  def merge2: PartialFunction[DiffCase, DiffCase] = { case null ⇒ null }
+  def merge2: PartialFunction[DiffCase, DiffCase] = { case null => null }
 
-  def merge3: PartialFunction[(DiffCase, DiffCase), DiffCase] = { case null ⇒ null }
+  def merge3: PartialFunction[(DiffCase, DiffCase), DiffCase] = { case null => null }
 
   def toNodeSeq: NodeSeq
 }
@@ -24,11 +24,11 @@ abstract sealed class DiffCase {
 object DiffCase {
   import DiffRow.Tag._
   def fromDiffRow(d: DiffRow) = d.getTag match {
-    case EQUAL if d.getOldLine.trim.length == 0 ⇒ EqualSpace
-    case EQUAL ⇒ EqualOther(d.getOldLine)
-    case INSERT ⇒ Insert(d.getNewLine)
-    case DELETE ⇒ Delete(d.getOldLine)
-    case CHANGE ⇒ Change(d.getOldLine, d.getNewLine)
+    case EQUAL if d.getOldLine.trim.length == 0 => EqualSpace
+    case EQUAL => EqualOther(d.getOldLine)
+    case INSERT => Insert(d.getNewLine)
+    case DELETE => Delete(d.getOldLine)
+    case CHANGE => Change(d.getOldLine, d.getNewLine)
   }
 
   def fromEQUAL(t: String) =
@@ -38,17 +38,17 @@ object DiffCase {
     case (Change(t1, t2) :: r) if t1.endsWith(" ") && t2.endsWith(" ") =>      
       collapseOnce(Change(t1.substring(0,t1.length-1), t2.substring(0,t2.length-1)) :: EqualSpace :: r)
     
-    case (Change(t1, t2) :: r) if t1.startsWith(" ") && t2.startsWith(" ") ⇒       
+    case (Change(t1, t2) :: r) if t1.startsWith(" ") && t2.startsWith(" ") =>       
       collapseOnce(EqualSpace :: Change(t1.substring(1), t2.substring(1)) :: r)
     
-    case (n1 :: n2 :: r) if n1.merge2.isDefinedAt(n2) ⇒ collapseOnce(n1.merge2(n2) :: r)
-    case (n1 :: n2 :: n3 :: r) if n1.merge3.isDefinedAt((n2, n3)) ⇒ collapseOnce(n1.merge3(n2, n3) :: r)
-    case l ⇒ l
+    case (n1 :: n2 :: r) if n1.merge2.isDefinedAt(n2) => collapseOnce(n1.merge2(n2) :: r)
+    case (n1 :: n2 :: n3 :: r) if n1.merge3.isDefinedAt((n2, n3)) => collapseOnce(n1.merge3(n2, n3) :: r)
+    case l => l
   }
 
   def collapse(l: List[DiffCase]): List[DiffCase] = l match {
-    case Nil ⇒ Nil
-    case n :: ll ⇒ {      
+    case Nil => Nil
+    case n :: ll => {      
       collapseOnce(n :: collapse(ll))      
     }
   }
@@ -59,54 +59,54 @@ sealed abstract class Equal extends DiffCase
 
 case object EqualSpace extends Equal {
   override def merge2 = {
-    case o: EqualOther ⇒ EqualOther(" " + o.text)
-    case EqualSpace ⇒ EqualSpace
+    case o: EqualOther => EqualOther(" " + o.text)
+    case EqualSpace => EqualSpace
   }
   override def toNodeSeq = scala.xml.Text(" ")
 }
 final case class EqualOther(text: String) extends Equal {
   override def merge2 = {
-    case o: EqualOther ⇒ EqualOther(text + o.text)
-    case EqualSpace ⇒ EqualOther(text + " ")
+    case o: EqualOther => EqualOther(text + o.text)
+    case EqualSpace => EqualOther(text + " ")
   }
   override def toNodeSeq = scala.xml.Text(text)
 }
 final case class Insert(text: String) extends DiffCase {
   override def merge2 = {
-    case Insert(t) ⇒ Insert(text + t)
-    case Change(o, n) ⇒ Change(o, text + n)
-    case Delete(t) ⇒ Change(t, text)
+    case Insert(t) => Insert(text + t)
+    case Change(o, n) => Change(o, text + n)
+    case Delete(t) => Change(t, text)
   }
   override def merge3 = {
-    case (EqualSpace, Insert(t)) ⇒ Insert(text + " " + t)
-    case (EqualSpace, Change(o, n)) ⇒ Change(o, text + " " + n)
-    case (EqualSpace, Delete(t)) ⇒ Change(t, text + " ")
+    case (EqualSpace, Insert(t)) => Insert(text + " " + t)
+    case (EqualSpace, Change(o, n)) => Change(o, text + " " + n)
+    case (EqualSpace, Delete(t)) => Change(t, text + " ")
   }
   override def toNodeSeq = <ins>{ text }</ins>
 }
 final case class Delete(text: String) extends DiffCase {
   override def merge2 = {
-    case Insert(t) ⇒ Change(text, t)
-    case Change(o, n) ⇒ Change(text + o, n)
-    case Delete(t) ⇒ Delete(text + t)
+    case Insert(t) => Change(text, t)
+    case Change(o, n) => Change(text + o, n)
+    case Delete(t) => Delete(text + t)
   }
   override def merge3 = {
-    case (EqualSpace, Insert(t)) ⇒ Change(text, " " + t)
-    case (EqualSpace, Change(o, n)) ⇒ Change(text + " " + o, " " + n)
-    case (EqualSpace, Delete(t)) ⇒ Delete(text + " " + t)
+    case (EqualSpace, Insert(t)) => Change(text, " " + t)
+    case (EqualSpace, Change(o, n)) => Change(text + " " + o, " " + n)
+    case (EqualSpace, Delete(t)) => Delete(text + " " + t)
   }
   override def toNodeSeq = <del>{ text }</del>
 }
 final case class Change(oldText: String, newText: String) extends DiffCase {
   override def merge2 = {
-    case Insert(t) ⇒ Change(oldText, newText + t)
-    case Change(o, n) ⇒ Change(oldText + o, newText + n)
-    case Delete(t) ⇒ Change(oldText + t, newText)
+    case Insert(t) => Change(oldText, newText + t)
+    case Change(o, n) => Change(oldText + o, newText + n)
+    case Delete(t) => Change(oldText + t, newText)
   }
   override def merge3 = {
-    case (EqualSpace, Insert(t)) ⇒ Change(oldText + " ", newText + " " + t)
-    case (EqualSpace, Change(o, n)) ⇒ Change(oldText + " " + o, newText + " " + n)
-    case (EqualSpace, Delete(t)) ⇒ Change(oldText + " " + t, newText + " ")
+    case (EqualSpace, Insert(t)) => Change(oldText + " ", newText + " " + t)
+    case (EqualSpace, Change(o, n)) => Change(oldText + " " + o, newText + " " + n)
+    case (EqualSpace, Delete(t)) => Change(oldText + " " + t, newText + " ")
   }
   override def toNodeSeq = (<del>{ oldText }</del><ins>{ newText }</ins>)
 }
@@ -132,25 +132,6 @@ object LexmlDiff {
     }
   }
 
-  /*val delimiters = "(\\s+|(:?(?<![0-9 ]))[.,](?:(?![0-9 ]))|[:;?!/()])"r
-
-  def tokenize(s: String) = {
-    val l = delimiters.findAllIn(s).matchData.map(x ⇒ (x.start, x.end))
-    val comp = l.foldLeft((0, List[(Int, Int)]())) {
-      case ((p, l), (i, f)) if p < i ⇒ (f, (i, f) :: (p, i) :: l)
-      case ((p, l), (i, f)) ⇒ (f, (i, f) :: l)
-    }
-    val r1 = comp._2 match {
-      case Nil ⇒ List((0, s.length))
-      case l @ ((i, f) :: _) if f < s.length ⇒ (f, s.length) :: l
-      case l ⇒ l
-    }
-
-    r1.reverse
-      .map({ case (i, f) ⇒ s.substring(i, f) })
-  
-  }*/
-  
   def tokenize(s : String) = Tokenizer(s)
   
   def proportion(d : DiffCase) : (Double,Double) = d match {
@@ -174,11 +155,10 @@ object LexmlDiff {
         .ignoreBlankLines(true)
         .ignoreWhiteSpaces(true)        
         .build
-      import scala.collection.JavaConversions._
       
       def normalize(s : String) = {
         val s1 = s.trim().replaceAll("\\s+", " ")
-        if(ignoreCase) { s.toLowerCase } else { s }
+        if(ignoreCase) { s1.toLowerCase } else { s1 }
       }
       
       val equalizer = new Equalizer[String] {            
@@ -186,11 +166,12 @@ object LexmlDiff {
                 normalize(original).equals(normalize(revised))
             }
         };
+      import scala.jdk.CollectionConverters._
+      val patch = DiffUtils.diff(oriTokens.asJava,altTokens.asJava,equalizer)
       
-      val patch = DiffUtils.diff(oriTokens,altTokens,equalizer)
-      
-      val uncollapsed = drg.generateDiffRows(oriTokens, altTokens,patch)
-        .toList
+      val uncollapsed = drg.generateDiffRows(oriTokens.asJava, altTokens.asJava,patch)
+        .asScala
+        .to(List)
         .map(DiffCase.fromDiffRow)
       
       val collapsed = DiffCase.collapse(uncollapsed)
@@ -211,17 +192,17 @@ object LexmlDiff {
       (NodeSeq fromSeq res.flatMap(_.toNodeSeq)).toString
   }
   
-  def processa(minProp : Double, ignoreCase : Boolean, src: File, dst: File) {
+  def processa(minProp : Double, ignoreCase : Boolean, src: File, dst: File) : Unit = {
     val srcXml = XML.loadFile(src)
     
     val x = (srcXml \\ "@minProp").toSeq.headOption.map(_.text.toDouble)
     val res = for {
-      versao ← srcXml \ "versao"
-      id ← versao \\ "@id"
+      versao <- srcXml \ "versao"
+      id <- versao \\ "@id"
       specificMinProp = (versao \\ "@minProp").map(_.text.toDouble / 100.0).headOption
-      ori ← versao \\ "ori"
-      alt ← versao \\ "alt"
-      role ← (versao \\ "@role").headOption
+      ori <- versao \\ "ori"
+      alt <- versao \\ "alt"
+      role <- (versao \\ "@role").headOption
     } yield {      
       val formated = diffAsXML(ori.text,alt.text,specificMinProp.getOrElse(minProp),ignoreCase)
       
